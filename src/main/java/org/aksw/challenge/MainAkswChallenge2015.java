@@ -1,6 +1,8 @@
 package org.aksw.challenge;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +16,9 @@ import org.aksw.jena_sparql_api.cache.staging.CacheBackendDaoPostgres;
 import org.aksw.jena_sparql_api.cache.staging.CacheBackendDataSource;
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 import org.apache.jena.atlas.web.HttpException;
+import org.h2.store.fs.FilePathZip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -73,9 +77,9 @@ public class MainAkswChallenge2015 {
 
         QueryExecutionFactory qef = FluentQueryExecutionFactory
             .http("http://localhost:8890/sparql", "http://data.semanticweb.org/")
-            .config()
-                .withCache(cacheFrontend)
-            .end()
+//            .config()
+//                .withCache(cacheFrontend)
+//            .end()
             .create();
 
         Prologue prologue = new Prologue();
@@ -105,9 +109,11 @@ public class MainAkswChallenge2015 {
                 continue;
             }
 
+            File dir = new File("cache");
+            dir.mkdir();
 
-            //String hash = StringUtils.md5Hash();
-            //File file = new File("resultset" + totalQueryCount);
+            String hash = StringUtils.md5Hash("" + query);
+            File file = new File(dir + "/" + hash + "sparql-results.xml.bz2");
 
 
             QueryExecution qe = qef.createQueryExecution(query);
@@ -118,11 +124,12 @@ public class MainAkswChallenge2015 {
             } else if(query.isSelectType()) {
                 try {
                     ResultSet rs = qe.execSelect();
-                    if(!rs.hasNext()) {
-                        ++emptyResultCount;
-                    }
+                    FileOutputStream tmp = new FileOutputStream(file);
+                    BZip2CompressorOutputStream out = new BZip2CompressorOutputStream(tmp);
 
-                    ResultSetFormatter.consume(rs);
+                    ResultSetFormatter.outputAsXML(out, rs);
+                    out.flush();
+                    out.close();
                 } catch(Exception e) {
                     if(e instanceof HttpException) {
                         HttpException x = (HttpException)e;
