@@ -10,7 +10,11 @@
     <packaging>jar</packaging>
 
     <properties>
-        <jena-sparql-api.version>2.13.0-6-SNAPSHOT</jena-sparql-api.version>
+        <jena-sparql-api.version>2.13.0-5</jena-sparql-api.version>
+        <slf4j.version>1.6.0</slf4j.version>
+
+        <!-- <log4j.version>1.2.14</log4j.version> -->
+
 
         <!-- Project Settings -->
         <maven.compiler.source>1.7</maven.compiler.source>
@@ -127,6 +131,21 @@
             <artifactId>jena-sparql-api-batch</artifactId>
             <version>${jena-sparql-api.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+            <type>jar</type>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>8.4-701.jdbc4</version>
+        </dependency>
+
     </dependencies>
 
 </project>
