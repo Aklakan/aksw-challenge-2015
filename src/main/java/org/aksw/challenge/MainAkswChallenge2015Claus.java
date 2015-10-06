@@ -36,6 +36,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
+import com.google.common.collect.TreeMultimap;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -185,16 +186,16 @@ public class MainAkswChallenge2015Claus {
     public static void doCrossValidation(List<Query> queries, QueryExecutionFactory qef) {
 
         Collections.shuffle(queries);
-        FoldCollection<Query> folds = createFoldCollection(queries, 5);
+        FoldCollection<Query> folds = createFoldCollection(queries, 10);
 
         int x = 0;
         for(Fold<Query> fold : folds) {
             ++x;
 
-            Map<String, Integer> trainingScores = createFreqMap(fold.getTrain(), qef);
-            Map<String, Integer> referenceList = createFreqMap(fold.getValidate(), qef);
+            Map<String, Integer> candScores = createFreqMap(fold.getTrain(), qef);
+            Map<String, Integer> refScores = createFreqMap(fold.getValidate(), qef);
 
-            double rmsd = Eval.getRMSD(trainingScores, referenceList);
+            double rmsd = Eval.getRMSD(refScores, refScores);
 
             System.out.println("Processing in fold " + x + ": " + rmsd);
         }
@@ -224,7 +225,9 @@ public class MainAkswChallenge2015Claus {
         doCrossValidation(queries, qef);
         //findQueriesWithNonEmptyResult(queries, qef);
         //indexQueries(queries, qef);
-        //nodeFreq(queries, qef);
+//        Map<String, Integer> map = createFreqMap(queries, qef);
+//        TreeMultimap<Integer, String> mm = Eval.indexByScore(map);
+//        Eval.print(System.out, mm, 10, false);
 
     }
 

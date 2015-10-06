@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 
@@ -32,21 +33,30 @@ public class Eval {
         }
     }
 
-    public static double getRMSD(Map<String, Integer> uriToScore, Map<String, Integer> testScoreList) {
+    public static double getRMSD(Map<String, Integer> candScores, Map<String, Integer> refScores) {
 
         System.out.println();
-        System.out.println("RMSD ------------");
-        TreeMultimap<Integer, String> a = indexByScore(uriToScore);
-        print(System.out, a, 10, false);
-        System.out.println("----");
-        TreeMultimap<Integer, String> b = indexByScore(testScoreList);
-        print(System.out, b, 10, false);
+        System.out.println("Status report ------------");
+        TreeMultimap<Integer, String> candIndex = indexByScore(candScores);
+        print(System.out, candIndex, 10, false);
+        System.out.println("- validation");
+        TreeMultimap<Integer, String> refIndex = indexByScore(refScores);
+        print(System.out, refIndex, 10, false);
 
 
-        Map<String, List<Double>> rankRange = createRanks(uriToScore);
-        List<String> testList = Eval.createOrderedList(testScoreList);
+        Map<String, List<Double>> candRanges = createRanks(candScores);
+        List<String> refList = Eval.createOrderedList(refScores);
 
-        double result = getRMSD(testList, rankRange);
+        System.out.println("- ref");
+        System.out.println(refList.subList(0, 10));
+
+        System.out.println("- cand");
+        for(String uri : Iterables.limit(candIndex.values(), 10)) {
+            List<Double> range = candRanges.get(uri);
+            System.out.println(uri + ": " + range);
+        }
+
+        double result = getRMSD(refList, candRanges);
         return result;
     }
 
@@ -97,7 +107,7 @@ public class Eval {
     }
 
 
-    private static TreeMultimap<Integer, String> indexByScore(Map<String, Integer> uriToScore) {
+    public static TreeMultimap<Integer, String> indexByScore(Map<String, Integer> uriToScore) {
         TreeMultimap<Integer, String> scoreToUris = TreeMultimap.create(Ordering.natural().reverse(), Ordering.natural());
         for(Entry<String, Integer> entry : uriToScore.entrySet()) {
             scoreToUris.put(entry.getValue(), entry.getKey());
