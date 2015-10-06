@@ -28,6 +28,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 import com.hp.hpl.jena.graph.Node;
@@ -143,6 +144,12 @@ public class MainAkswChallenge2015Claus {
     public static void main(String[] args) throws Exception {
 
         Iterable<Query> queries = readQueryLog();
+
+        Set<Query> foo = new HashSet<Query>();
+        Iterables.addAll(foo, queries);
+        System.out.println(foo.size());
+        System.exit(0);
+
 
         File cacheDir = new File("cache");
         CacheBackend cacheBackend = new CacheBackendFile(cacheDir, 10000000l);
