@@ -75,16 +75,14 @@ public class MainAkswChallenge2015Claus {
         PrintWriter out = new PrintWriter(new BZip2CompressorOutputStream(new FileOutputStream(new File("cleaned-queries.dat.bz2"))));
 
         for(Query query : queries) {
-            boolean isEmpty = true;
+            boolean hasBindings;
             QueryExecution qe = qef.createQueryExecution(query);
             try {
                 ResultSet rs = qe.execSelect();
-                if(rs.hasNext()) {
-                    isEmpty = false;
-                }
+                hasBindings = rs.hasNext();
                 ResultSetFormatter.consume(rs);
 
-                if(!isEmpty) {
+                if(hasBindings) {
                     out.println(StringUtils.urlEncode("" + query));
                 }
             } catch(Exception e) {
@@ -146,7 +144,7 @@ public class MainAkswChallenge2015Claus {
     }
 
     public static List<Query> readQueryLog() throws IOException {
-        Resource queryLog = new ClassPathResource("trained_queries.txt.bz2");
+        Resource queryLog = new ClassPathResource("queries-with-results.dat.bz2");
         MetaBZip2CompressorInputStream in = new MetaBZip2CompressorInputStream(queryLog.getInputStream());
 
 
