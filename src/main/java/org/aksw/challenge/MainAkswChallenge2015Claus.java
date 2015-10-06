@@ -9,8 +9,10 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.aksw.commons.util.compress.MetaBZip2CompressorInputStream;
@@ -103,14 +105,11 @@ public class MainAkswChallenge2015Claus {
         }
     }
 
-    public static void nodeFreq(Iterable<Query> queries, QueryExecutionFactory qef) throws FileNotFoundException {
-        //Iterables.partition(iterable, size);
-
-
+    public static Map<String, Integer> createFreqMap(Iterable<Query> queries, QueryExecutionFactory qef) {
         Multiset<Node> nodes = HashMultiset.create();
         int i = 0;
         for(Query query : queries) {
-            System.out.println("" + ++i);
+            //System.out.println("createFreqMap" + ++i);
             QueryExecution qe = qef.createQueryExecution(query);
 
             ResultSet rs;
@@ -133,20 +132,22 @@ public class MainAkswChallenge2015Claus {
         }
 
 
-
-        PrintWriter out = new PrintWriter(new FileOutputStream(new File("node-query-freq.dat")));
+        Map<String, Integer> result = new HashMap<String, Integer>();
         for (Node node : Multisets.copyHighestCountFirst(nodes).elementSet()) {
-            out.println(nodes.count(node) + "\t" + node);
+            int count = nodes.count(node);
+            if(node.isURI()) {
+                String str = node.getURI();
+                result.put(str, count);
+            }
         }
-        out.flush();
-        out.close();
 
+        //PrintWriter out = new PrintWriter(new FileOutputStream(new File("node-query-freq.dat")));
+        return result;
     }
 
     public static List<Query> readQueryLog() throws IOException {
         Resource queryLog = new ClassPathResource("queries-with-results.dat.bz2");
         MetaBZip2CompressorInputStream in = new MetaBZip2CompressorInputStream(queryLog.getInputStream());
-
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
@@ -181,7 +182,7 @@ public class MainAkswChallenge2015Claus {
     }
 
 
-    public static void foo(List<Query> queries) {
+    public static void doCrossValidation(List<Query> queries, QueryExecutionFactory qef) {
 
         Collections.shuffle(queries);
         FoldCollection<Query> folds = createFoldCollection(queries, 5);
@@ -189,13 +190,22 @@ public class MainAkswChallenge2015Claus {
         int x = 0;
         for(Fold<Query> fold : folds) {
             ++x;
-            System.out.println(x + " " + fold.getTrain().size() + " " + fold.getValidate().size());
 
+            Map<String, Integer> trainingScores = createFreqMap(fold.getTrain(), qef);
+            Map<String, Integer> referenceList = createFreqMap(fold.getValidate(), qef);
+
+            double rmsd = Eval.getRMSD(trainingScores, referenceList);
+
+            System.out.println("Processing in fold " + x + ": " + rmsd);
         }
 
     }
 
     public static void main(String[] args) throws Exception {
+
+//        Number x = new Double(4.5);
+//        System.out.println(x.intValue());
+//        System.exit(0);
 
         List<Query> queries = readQueryLog();
 
@@ -211,9 +221,16 @@ public class MainAkswChallenge2015Claus {
             .create();
 
 
-        findQueriesWithNonEmptyResult(queries, qef);
+        doCrossValidation(queries, qef);
+        //findQueriesWithNonEmptyResult(queries, qef);
         //indexQueries(queries, qef);
         //nodeFreq(queries, qef);
+
+    }
+
+    public static void core() {
+
+
 
     }
 }
