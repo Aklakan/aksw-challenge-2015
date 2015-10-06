@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +23,7 @@ import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParser;
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -29,6 +31,7 @@ import org.springframework.core.io.Resource;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 import com.hp.hpl.jena.graph.Node;
@@ -37,9 +40,6 @@ import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.query.Syntax;
-
-
-
 
 public class MainAkswChallenge2015Claus {
 
@@ -71,6 +71,31 @@ public class MainAkswChallenge2015Claus {
 //
 //    }
 
+    public static void findQueriesWithNonEmptyResult(Iterable<Query> queries, QueryExecutionFactory qef) throws IOException {
+        PrintWriter out = new PrintWriter(new BZip2CompressorOutputStream(new FileOutputStream(new File("cleaned-queries.dat.bz2"))));
+
+        for(Query query : queries) {
+            boolean isEmpty = true;
+            QueryExecution qe = qef.createQueryExecution(query);
+            try {
+                ResultSet rs = qe.execSelect();
+                if(rs.hasNext()) {
+                    isEmpty = false;
+                }
+                ResultSetFormatter.consume(rs);
+
+                if(!isEmpty) {
+                    out.println(StringUtils.urlEncode("" + query));
+                }
+            } catch(Exception e) {
+                logger.warn("Something went wrong", e);
+                continue;
+            }
+        }
+        out.flush();
+        out.close();
+    }
+
 
     public static void indexQueries(Iterable<Query> queries, QueryExecutionFactory qef) {
         for(Query query : queries) {
@@ -81,6 +106,9 @@ public class MainAkswChallenge2015Claus {
     }
 
     public static void nodeFreq(Iterable<Query> queries, QueryExecutionFactory qef) throws FileNotFoundException {
+        //Iterables.partition(iterable, size);
+
+
         Multiset<Node> nodes = HashMultiset.create();
         int i = 0;
         for(Query query : queries) {
@@ -117,7 +145,7 @@ public class MainAkswChallenge2015Claus {
 
     }
 
-    public static Iterable<Query> readQueryLog() throws IOException {
+    public static List<Query> readQueryLog() throws IOException {
         Resource queryLog = new ClassPathResource("trained_queries.txt.bz2");
         MetaBZip2CompressorInputStream in = new MetaBZip2CompressorInputStream(queryLog.getInputStream());
 
@@ -133,6 +161,9 @@ public class MainAkswChallenge2015Claus {
             String queryStr = StringUtils.urlDecode(rawLine);
             Query query = queryParser.apply(queryStr);
 
+//            System.out.println(query);
+//            System.out.println("--------------------------");
+
             result.add(query);
         }
         reader.close();
@@ -141,15 +172,34 @@ public class MainAkswChallenge2015Claus {
 
     }
 
+
+    public static <T> FoldCollection<T> createFoldCollection(List<T> items, int k) {
+        Collections.shuffle(items);
+        int partitionSize = (int)(items.size() / (double)k);
+        List<List<T>> partitions = Lists.newArrayList(Iterables.partition(items, partitionSize));
+
+        FoldCollection<T> result = new FoldCollection<T>(partitions);
+        return result;
+    }
+
+
+    public static void foo(List<Query> queries) {
+
+        Collections.shuffle(queries);
+        FoldCollection<Query> folds = createFoldCollection(queries, 5);
+
+        int x = 0;
+        for(Fold<Query> fold : folds) {
+            ++x;
+            System.out.println(x + " " + fold.getTrain().size() + " " + fold.getValidate().size());
+
+        }
+
+    }
+
     public static void main(String[] args) throws Exception {
 
-        Iterable<Query> queries = readQueryLog();
-
-        Set<Query> foo = new HashSet<Query>();
-        Iterables.addAll(foo, queries);
-        System.out.println(foo.size());
-        System.exit(0);
-
+        List<Query> queries = readQueryLog();
 
         File cacheDir = new File("cache");
         CacheBackend cacheBackend = new CacheBackendFile(cacheDir, 10000000l);
@@ -163,8 +213,9 @@ public class MainAkswChallenge2015Claus {
             .create();
 
 
+        findQueriesWithNonEmptyResult(queries, qef);
         //indexQueries(queries, qef);
-        nodeFreq(queries, qef);
+        //nodeFreq(queries, qef);
 
     }
 }
