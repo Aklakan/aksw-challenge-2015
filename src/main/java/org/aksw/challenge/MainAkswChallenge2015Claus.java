@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,6 +30,7 @@ import org.springframework.core.io.Resource;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 import com.hp.hpl.jena.graph.Node;
@@ -37,9 +39,6 @@ import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.query.Syntax;
-
-
-
 
 public class MainAkswChallenge2015Claus {
 
@@ -81,6 +80,9 @@ public class MainAkswChallenge2015Claus {
     }
 
     public static void nodeFreq(Iterable<Query> queries, QueryExecutionFactory qef) throws FileNotFoundException {
+        //Iterables.partition(iterable, size);
+
+
         Multiset<Node> nodes = HashMultiset.create();
         int i = 0;
         for(Query query : queries) {
@@ -117,7 +119,7 @@ public class MainAkswChallenge2015Claus {
 
     }
 
-    public static Iterable<Query> readQueryLog() throws IOException {
+    public static List<Query> readQueryLog() throws IOException {
         Resource queryLog = new ClassPathResource("trained_queries.txt.bz2");
         MetaBZip2CompressorInputStream in = new MetaBZip2CompressorInputStream(queryLog.getInputStream());
 
@@ -133,6 +135,9 @@ public class MainAkswChallenge2015Claus {
             String queryStr = StringUtils.urlDecode(rawLine);
             Query query = queryParser.apply(queryStr);
 
+//            System.out.println(query);
+//            System.out.println("--------------------------");
+
             result.add(query);
         }
         reader.close();
@@ -141,9 +146,39 @@ public class MainAkswChallenge2015Claus {
 
     }
 
+
     public static void main(String[] args) throws Exception {
 
-        Iterable<Query> queries = readQueryLog();
+        List<Query> queries = readQueryLog();
+
+        //System.out.println(new HashSet(queries).size());
+
+        Collections.shuffle(queries);
+        int k = 5;
+        int partitionSize = (int)(queries.size() / (double)k);
+        List<List<Query>> partitions = Lists.newArrayList(Iterables.partition(queries, partitionSize));
+
+        FoldCollection<Query> folds = new FoldCollection<>(partitions);
+
+        int x = 0;
+        for(Fold<Query> fold : folds) {
+            ++x;
+            System.out.println(x + " " + fold.getTrain().size() + " " + fold.getValidate().size());
+
+        }
+        System.exit(0);
+
+
+//        Iterables.partition(iterable, size);
+//
+//
+//        int itemCount = Iterables.size(queries);
+//        int k = 5;
+//        int foldSize = itemCount / (double)k;
+
+
+
+
 
         Set<Query> foo = new HashSet<Query>();
         Iterables.addAll(foo, queries);
