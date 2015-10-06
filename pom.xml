@@ -152,6 +152,12 @@
             <version>0.8.0.RELEASE</version>
         </dependency>
 
+
+        <dependency>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>weka-stable</artifactId>
+            <version>3.6.13</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -159,8 +165,12 @@
             <id>maven.aksw.snapshots</id>
             <name>AKSW Snapshot Repository</name>
             <url>http://maven.aksw.org/archiva/repository/snapshots</url>
-            <releases><enabled>false</enabled></releases>
-            <snapshots><enabled>true</enabled></snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
