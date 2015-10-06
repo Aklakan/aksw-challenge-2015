@@ -215,7 +215,7 @@ public class MainAkswChallenge2015Claus {
         CacheFrontend cacheFrontend = new CacheFrontendImpl(cacheBackend);
 
         QueryExecutionFactory qef = FluentQueryExecutionFactory
-            .http("http://localhost:8890/sparql", "http://data.semanticweb.org/")
+            .http("http://localhost:8890/sparql", "http://aksw.challenge")
             .config()
                 .withCache(cacheFrontend)
             .end()
