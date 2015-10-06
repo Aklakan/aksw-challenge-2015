@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.aksw.commons.util.compress.MetaBZip2CompressorInputStream;
 import org.aksw.commons.util.strings.StringUtils;
@@ -93,11 +95,19 @@ public class MainAkswChallenge2015Claus {
             }
 
             Multiset<Node> tmp = NodeUtils.getNodes(rs);
-            nodes.addAll(tmp);
+
+            boolean singleCount = true;
+            if(singleCount) {
+                Set<Node> x = new HashSet<Node>(tmp);
+                nodes.addAll(x);
+            } else {
+                nodes.addAll(tmp);
+            }
         }
 
 
-        PrintWriter out = new PrintWriter(new FileOutputStream(new File("node-freq.dat")));
+
+        PrintWriter out = new PrintWriter(new FileOutputStream(new File("node-query-freq.dat")));
         for (Node node : Multisets.copyHighestCountFirst(nodes).elementSet()) {
             out.println(nodes.count(node) + "\t" + node);
         }
