@@ -2,26 +2,22 @@ package org.aksw.challenge;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.aksw.commons.util.compress.MetaBZip2CompressorInputStream;
 import org.aksw.commons.util.strings.StringUtils;
 import org.aksw.jena_sparql_api.cache.extra.CacheBackend;
 import org.aksw.jena_sparql_api.cache.extra.CacheFrontend;
 import org.aksw.jena_sparql_api.cache.extra.CacheFrontendImpl;
+import org.aksw.jena_sparql_api.cache.file.CacheBackendFile;
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 import org.apache.jena.atlas.web.HttpException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
-import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryFactory;
@@ -32,9 +28,9 @@ import com.hp.hpl.jena.sparql.core.Prologue;
 
 
 
-public class MainAkswChallenge2015 {
+public class MainAkswChallenge2015Claus {
 
-    private static final Logger logger = LoggerFactory.getLogger(MainAkswChallenge2015.class);
+    private static final Logger logger = LoggerFactory.getLogger(MainAkswChallenge2015Claus.class);
 
 
 //    public static void main(String[] args) throws Exception {
