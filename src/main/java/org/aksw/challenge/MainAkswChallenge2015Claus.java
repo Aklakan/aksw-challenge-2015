@@ -2,8 +2,11 @@ package org.aksw.challenge;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,7 +77,7 @@ public class MainAkswChallenge2015Claus {
         }
     }
 
-    public static void nodeFreq(Iterable<Query> queries, QueryExecutionFactory qef) {
+    public static void nodeFreq(Iterable<Query> queries, QueryExecutionFactory qef) throws FileNotFoundException {
         Multiset<Node> nodes = HashMultiset.create();
         int i = 0;
         for(Query query : queries) {
@@ -94,9 +97,12 @@ public class MainAkswChallenge2015Claus {
         }
 
 
+        PrintWriter out = new PrintWriter(new FileOutputStream(new File("node-freq.dat")));
         for (Node node : Multisets.copyHighestCountFirst(nodes).elementSet()) {
-            System.out.println(node + ": " + nodes.count(node));
+            out.println(nodes.count(node) + "\t" + node);
         }
+        out.flush();
+        out.close();
 
     }
 
