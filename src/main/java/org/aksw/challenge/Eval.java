@@ -48,7 +48,7 @@ public class Eval {
         List<String> refList = Eval.createOrderedList(refScores);
 
         System.out.println("- ref");
-        System.out.println(refList.subList(0, 10));
+        System.out.println(refList.subList(0, Math.min(10, refList.size())));
 
         System.out.println("- cand");
         for(String uri : Iterables.limit(candIndex.values(), 10)) {

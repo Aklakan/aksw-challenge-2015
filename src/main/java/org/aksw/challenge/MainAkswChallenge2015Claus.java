@@ -2,9 +2,9 @@ package org.aksw.challenge;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -26,6 +26,7 @@ import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParser;
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
+import org.apache.jena.riot.Lang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -36,13 +37,14 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
-import com.google.common.collect.TreeMultimap;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.query.Syntax;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 public class MainAkswChallenge2015Claus {
 
@@ -195,7 +197,7 @@ public class MainAkswChallenge2015Claus {
             Map<String, Integer> candScores = createFreqMap(fold.getTrain(), qef);
             Map<String, Integer> refScores = createFreqMap(fold.getValidate(), qef);
 
-            double rmsd = Eval.getRMSD(refScores, refScores);
+            double rmsd = Eval.getRMSD(candScores, refScores);
 
             System.out.println("Processing in fold " + x + ": " + rmsd);
         }
@@ -204,8 +206,14 @@ public class MainAkswChallenge2015Claus {
 
     public static void main(String[] args) throws Exception {
 
+        Model model = ModelFactory.createDefaultModel();
+
+//        InputStream in = new MetaBZip2CompressorInputStream(new ClassPathResource("swdf.nt.bz2").getInputStream());
+//        model.read(in, "http://example.org/base/", "N-TRIPLES");
+
 //        Number x = new Double(4.5);
 //        System.out.println(x.intValue());
+
 //        System.exit(0);
 
         List<Query> queries = readQueryLog();
@@ -215,7 +223,8 @@ public class MainAkswChallenge2015Claus {
         CacheFrontend cacheFrontend = new CacheFrontendImpl(cacheBackend);
 
         QueryExecutionFactory qef = FluentQueryExecutionFactory
-            .http("http://localhost:8890/sparql", "http://aksw.challenge")
+            .http("http://localhost:8890/sparql", "http://data.semanticweb.org/")
+            //.model(model)
             .config()
                 .withCache(cacheFrontend)
             .end()
