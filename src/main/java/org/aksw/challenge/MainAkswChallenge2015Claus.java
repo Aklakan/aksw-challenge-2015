@@ -2,10 +2,12 @@ package org.aksw.challenge;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +28,6 @@ import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParser;
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
-import org.apache.jena.riot.Lang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -176,7 +177,6 @@ public class MainAkswChallenge2015Claus {
 
 
     public static <T> FoldCollection<T> createFoldCollection(List<T> items, int k) {
-        Collections.shuffle(items);
         int partitionSize = (int)(items.size() / (double)k);
         List<List<T>> partitions = Lists.newArrayList(Iterables.partition(items, partitionSize));
 
@@ -203,6 +203,19 @@ public class MainAkswChallenge2015Claus {
         }
 
     }
+
+    public static void createFreqList(List<Query> queries, QueryExecutionFactory qef) throws FileNotFoundException {
+        Map<String, Integer> candScores = createFreqMap(queries, qef);
+        List<String> items = Eval.createOrderedList(candScores);
+        PrintStream out = new PrintStream(new File("group2-final-list.txt"));
+
+        for(String item : items) {
+            out.println(item);
+        }
+        out.flush();
+        out.close();
+    }
+
 
     public static void main(String[] args) throws Exception {
 
@@ -231,7 +244,10 @@ public class MainAkswChallenge2015Claus {
             .create();
 
 
-        doCrossValidation(queries, qef);
+
+        List<Query> subList = queries.subList(3700, queries.size());
+        createFreqList(subList, qef);
+        //doCrossValidation(queries, qef);
         //findQueriesWithNonEmptyResult(queries, qef);
         //indexQueries(queries, qef);
 //        Map<String, Integer> map = createFreqMap(queries, qef);
